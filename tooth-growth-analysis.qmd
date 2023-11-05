@@ -1,0 +1,170 @@
+---
+title: "tooth-growth-analysis"
+author: "Mephistopheles-0"
+format: pdf
+editor: visual
+---
+
+# A Basic Statistical Analysis of the ToothGrowth Dataset (The Effect of Vitamin C on Tooth Growth in Guinea Pigs)
+
+## Overview
+
+We're going to analyze the ToothGrowth data in the R datasets package by:
+
+-   Load the ToothGrowth data and perform some basic exploratory data analyses
+
+-   Provide a basic summary of the data.
+
+-   Use confidence intervals and/or hypothesis tests to compare tooth growth by supp and dose. (Only use the techniques from class, even if there's other approaches worth considering)
+
+-   State your conclusions and the assumptions needed for your conclusions.
+
+## About the data
+
+The response is the length of odontoblasts (cells responsible for tooth growth) in 60 guinea pigs. Each animal received one of three dose levels of vitamin C (0.5, 1, and 2 mg/day) by one of two delivery methods, orange juice or ascorbic acid (a form of vitamin C and coded as `VC`).
+
+## Loading the dataset and the ggplot library
+
+```{r}
+# Loading the ToothGrowth dataset
+data(ToothGrowth)
+library(ggplot2)
+```
+
+## Basic infos
+
+```{r}
+# Printing the structure of the dataset
+str(ToothGrowth)
+```
+
+```{r}
+# summary for the Supplement type
+summary(ToothGrowth$supp)
+```
+
+```{r}
+# summary for the Dose
+summary(ToothGrowth$dose)
+```
+
+```{r}
+# Displaying the first few rows of the dataset
+head(ToothGrowth)
+```
+
+```{r}
+# Basic statistics summary
+summary(ToothGrowth)
+```
+
+## Some DataViz
+
+```{r}
+# Boxplot for the variable 'len'
+boxplot(ToothGrowth$len, 
+        main="Boxplot of Length", 
+        xlab="Supplement", 
+        ylab="Length", 
+        col=c("orange","green","blue"), 
+        border="brown")
+```
+
+```{r}
+hist(ToothGrowth$len, 
+     main="Histogram of Length", 
+     xlab="Length", 
+     ylab="Frequency", 
+     col="skyblue")
+```
+
+```{r}
+plot(density(ToothGrowth$len), 
+     main="Density Plot of Length", 
+     xlab="Length", 
+     ylab="Density", 
+     col="red")
+```
+
+```{r}
+# Q-Q plot for checking normality of the variable 'len'
+qqnorm(ToothGrowth$len, 
+       main="Q-Q Plot of Length")
+qqline(ToothGrowth$len)
+```
+
+```{r}
+cor(ToothGrowth[sapply(ToothGrowth, is.numeric)])
+```
+
+We can see that the length of the tooth and the dose of vitamin C have a high correlation.
+
+```{r}
+plot1 <- ggplot(ToothGrowth, aes(x = factor(dose), y = len, fill = factor(dose)))
+plot1 + geom_boxplot() + xlab("dosage") + ylab("length")
+```
+
+again, the boxplot clearly shows that as the dosage of vitamin C increases the length increases also.
+
+## Compare Tooth Growth by Dose and Supplement Type using Confidence Intervals and Testing.
+
+### The 95% Confidence Interval of Tooth Growth
+
+```{r}
+# The mean of the tooth length
+mu <- mean(ToothGrowth$len)
+
+# The standard deviation of the tooth length
+sigma <- sd(ToothGrowth$len)
+
+# the 95% confidence interval
+interval <- mu + c(-1,1) * qnorm(0.975) * sigma / sqrt(length(ToothGrowth))
+interval
+```
+
+### The T-Test by dose and supp
+
+```{r}
+t.test(len ~ supp, data = ToothGrowth)
+```
+
+thus, we can't reject the null hypothesis .
+
+### T-Test of the Dose level.
+
+```{r}
+# create subsets of small, medium, and large dosage
+dose1 <- subset(ToothGrowth, dose == 0.5)
+dose2 <- subset(ToothGrowth, dose == 1)
+dose3 <- subset(ToothGrowth, dose == 2)
+```
+
+#### T-Test for small dasage
+
+```{r}
+t.test(len~supp, data = dose1)
+```
+
+####  T-Test for medium dosage
+
+```{r}
+t.test(len~supp, data = dose2)
+```
+
+#### T-Test for large dosage
+
+```{r}
+t.test(len~supp, data = dose3)
+```
+
+-   for the 1st and the 2nd tests we have quietly small p-value, so we can reject the null hypothesis.
+
+-   for the 3rd test, we have a high p-value of 0. 9639, thus we cannot reject the null hypothesis.
+
+## Conclusion
+
+-   The tooth length growth has nothing to do with the supplements.
+
+-   for the 0.5 and 1 dosages, Orange Juice (OJ) has a higher effect on the tooth length comparing the Vitamin C (VC).
+
+-   for the dosage 2, there is no such difference between the OJ and VC supplements effect.
